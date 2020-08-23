@@ -24,18 +24,30 @@
             <property name="jdbcUrl" value="jdbc:mysql://192.168.182.154/sharding-order?serverTimezone=Asia/Shanghai&amp;useSSL=false"></property>
         </bean>
 
-        <bean id="ds1" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <bean id="ms1" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
             <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
             <property name="username" value="root"></property>
             <property name="password" value="ShuShun@1558"></property>
             <property name="jdbcUrl" value="jdbc:mysql://192.168.182.155/shard_order?serverTimezone=Asia/Shanghai&amp;useSSL=false"></property>
         </bean>
 
+        <bean id="slave0" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+            <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+            <property name="username" value="root"></property>
+            <property name="password" value="ShuShun@1558"></property>
+            <property name="jdbcUrl" value="jdbc:mysql://192.168.182.162/shard_order?serverTimezone=Asia/Shanghai&amp;useSSL=false"></property>
+        </bean>
+
+
+    <master-slave:load-balance-algorithm id="msStrategy" type="random"></master-slave:load-balance-algorithm>
 
         <sharding:data-source id="sharding-data-source">
-            <sharding:sharding-rule data-source-names="ds0,ds1">
+            <sharding:sharding-rule data-source-names="ds0,slave0,ms1">
+                <sharding:master-slave-rules>
+                    <sharding:master-slave-rule id="ms0" master-data-source-name="ds0" strategy-ref="msStrategy" slave-data-source-names="slave0"/>
+                </sharding:master-slave-rules>
                 <sharding:table-rules>
-                    <sharding:table-rule logic-table="t_order" actual-data-nodes="ds$->{0..1}.t_order_$->{1..2}"
+                    <sharding:table-rule logic-table="t_order" actual-data-nodes="ms$->{0..1}.t_order_$->{1..2}"
                         database-strategy-ref="databaseStrategy" table-strategy-ref="tableStrategy"
                     />
                 </sharding:table-rules>
@@ -44,8 +56,8 @@
                 </sharding:broadcast-table-rules>
             </sharding:sharding-rule>
         </sharding:data-source>
-    
-        <sharding:inline-strategy id="databaseStrategy" sharding-column="user_id" algorithm-expression="ds$->{user_id%2}"/>
+
+        <sharding:inline-strategy id="databaseStrategy" sharding-column="user_id" algorithm-expression="ms$->{user_id%2}"/>
 
         <sharding:inline-strategy id="tableStrategy" sharding-column="id" algorithm-expression="t_order_$->{order_id%2+1}"/>
 
