@@ -1,1 +1,1 @@
-# sue-sharding-jdbc
+# 😋sue-sharding-jdbc
