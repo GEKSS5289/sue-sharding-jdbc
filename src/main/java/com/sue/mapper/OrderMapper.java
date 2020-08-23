@@ -3,13 +3,13 @@ package com.sue.mapper;
 import com.sue.pojo.Order;
 
 public interface OrderMapper {
-    int deleteByPrimaryKey(Integer id);
+    int deleteByPrimaryKey(Integer orderId);
 
     int insert(Order record);
 
     int insertSelective(Order record);
 
-    Order selectByPrimaryKey(Integer id);
+    Order selectByPrimaryKey(Integer orderId);
 
     int updateByPrimaryKeySelective(Order record);
 
